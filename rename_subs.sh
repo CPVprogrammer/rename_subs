@@ -37,8 +37,11 @@ if [ ! -z "$1" ]; then
 fi
 echo -e "sub extension is case sensitive, using: .$SUBEXT\n"
 
+shopt -s nullglob
+shopt -s extglob
+
 SUBLIST=(*.$SUBEXT)
-OTHERLIST=(*[!.$SUBEXT])
+OTHERLIST=(!(*.$SUBEXT))
 
 if [ ${#SUBLIST[@]} -ne ${#OTHERLIST[@]} ]; then
 	echo "subs amount  = ${#SUBLIST[@]}"
@@ -50,5 +53,5 @@ fi
 
 for ((i = 0; i < ${#SUBLIST[@]}; i++))
 do
-	mv "${SUBLIST[i]}" "${OTHERLIST[i]%.*}.$SUBEXT"
+	mv "${SUBLIST[i]}" "${OTHERLIST[i]%.*}.$SUBEXT" 2>/dev/null
 done
