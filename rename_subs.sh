@@ -29,19 +29,22 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 #
 # v1.00 first release
+# v1.01 improvements
 
 SUBEXT="srt"
 
 if [ ! -z "$1" ]; then
 	SUBEXT="$1"
 fi
-echo -e "sub extension is case sensitive, using: .$SUBEXT\n"
 
-shopt -s nullglob
-shopt -s extglob
+echo "usage:  ${0} [extension] --> .srt if not specified"
+echo -e "using subtitle extension: .$SUBEXT\n"
 
-SUBLIST=(*.$SUBEXT)
-OTHERLIST=(!(*.$SUBEXT))
+IFS=$'\n'
+
+SUBLIST=($(find . -iname \*.$SUBEXT | sort))
+OTHERLIST=($(find . -mindepth 1 -not -iname \*.$SUBEXT | sort))
+
 
 if [ ${#SUBLIST[@]} -ne ${#OTHERLIST[@]} ]; then
 	echo "subs amount  = ${#SUBLIST[@]}"
@@ -51,7 +54,27 @@ if [ ${#SUBLIST[@]} -ne ${#OTHERLIST[@]} ]; then
 	exit 1
 fi
 
+
+
+for ((i = 0; i < ${#OTHERLIST[@]}; i++))
+do
+	echo "${SUBLIST[i]:2}"
+	FILE=${OTHERLIST[i]%.*}.$SUBEXT
+	echo "-->   ${FILE:2}"
+	echo
+done
+
+while true; do
+    read -p "correct? (y/n) " yn
+    case $yn in
+        [Yy]* ) echo renaming...; break;;
+        [Nn]* ) exit;;
+        * ) echo "\"y\" or \"n\"";;
+    esac
+done
+
 for ((i = 0; i < ${#SUBLIST[@]}; i++))
 do
 	mv "${SUBLIST[i]}" "${OTHERLIST[i]%.*}.$SUBEXT" 2>/dev/null
 done
+echo -e "\nrenaming complete."
